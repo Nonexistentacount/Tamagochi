@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mascota Virtual</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom,#9ad0ff,#eaf6ff);
+    text-align:center;
+    margin:0;
+    padding:20px;
+}
+
+h1{
+    color:#333;
+}
+
+#contenedor{
+    width:900px;
+    margin:auto;
+    margin-top:20px;
+    display:flex;
+    justify-content:center;
+    gap:40px;
+}
+
+#zonaMascota{
+    width:450px;
+    height:350px;
+    border-radius:20px;
+    background:white;
+    box-shadow:0 0 15px rgba(0,0,0,.2);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+#mascota{
+    width:250px;
+    transition:0.3s;
+}
+
+#panel{
+    width:300px;
+    background:white;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 0 15px rgba(0,0,0,.2);
+    text-align:left;
+}
+
+.barra{
+    width:100%;
+    height:20px;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:15px;
+}
+
+.relleno{
+    height:100%;
+    background:#4CAF50;
+    transition:0.5s;
+}
+
+#objetos{
+    margin-top:30px;
+}
+
+.objeto{
+    width:90px;
+    margin:10px;
+    cursor:grab;
+    transition:0.3s;
+}
+
+.objeto:hover{
+    transform:scale(1.15);
+}
+
+#estado{
+    font-size:30px;
+}
+
+</style>
+
+<script>
+
+// VARIABLES
+let hambre = 50;
+let sueno = 50;
+let salud = 80;
+let felicidad = 70;
+let higiene = 60;
+let humor = "😄";
+
+// DRAG
+function dragstartHandler(ev){
+    ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function dragoverHandler(ev){
+    ev.preventDefault();
+}
+
+// DROP
+function dropHandler(ev){
+    ev.preventDefault();
+
+    const data = ev.dataTransfer.getData("text");
+
+    if(data == "comida"){
+        hambre -= 15;
+        felicidad += 5;
+        humor = "😋";
+    }
+
+    if(data == "cama"){
+        sueno -= 20;
+        salud += 5;
+        humor = "😴";
+    }
+
+    if(data == "juego"){
+        felicidad += 15;
+        salud += 5;
+        hambre += 5;
+        humor = "🥳";
+    }
+
+    if(data == "ducha"){
+        higiene += 20;
+        felicidad += 5;
+        humor = "🛁";
+    }
+
+    normalizar();
+    actualizarLabels();
+}
+
+// LIMITES
+function normalizar(){
+    hambre = Math.max(0, Math.min(100, hambre));
+    sueno = Math.max(0, Math.min(100, sueno));
+    salud = Math.max(0, Math.min(100, salud));
+    felicidad = Math.max(0, Math.min(100, felicidad));
+    higiene = Math.max(0, Math.min(100, higiene));
+}
+
+// ESTADO
+function calcularEstado(){
+
+    if(salud < 30){
+        return "🤒 Enfermo";
+    }
+
+    if(hambre > 70){
+        return "😢 Hambriento";
+    }
+
+    if(sueno > 70){
+        return "😴 Cansado";
+    }
+
+    if(felicidad < 30){
+        return "😭 Triste";
+    }
+
+    return humor + " Feliz";
+}
+
+// CAMBIAR IMAGEN
+function actualizarMascota(){
+
+    let img = document.getElementById("mascota");
+
+    // MUERTO
+    if(salud <= 0){
+        img.src = "Brochacho muerto.png";
+    }
+
+    // ENFERMO
+    else if(salud < 30){
+        img.src = "Brochacho enfermo.png";
+    }
+
+    // TRISTE
+    else if(felicidad < 30){
+        img.src = "Brochacho triste.png";
+    }
+
+    // ENOJADO
+    else if(hambre > 80 || higiene < 20){
+        img.src = "brochacho enojado.png";
+    }
+
+    // CON HAMBRE
+    else if(hambre > 70){
+        img.src = "Brochacho con hambre.png";
+    }
+
+    // CON SUEÑO
+    else if(sueno > 70){
+        img.src = "Brochacho con sueño.png";
+    }
+
+    // FELIZ
+    else{
+        img.src = "Brochacho feliz.png";
+    }
+}
+// ACTUALIZAR UI
+function actualizarLabels(){
+
+    document.getElementById("estado").innerHTML = calcularEstado();
+
+    document.getElementById("lblPorcentajeHambre").innerHTML = hambre + "%";
+    document.getElementById("lblPorcentajeSueno").innerHTML = sueno + "%";
+    document.getElementById("lblPorcentajeSalud").innerHTML = salud + "%";
+    document.getElementById("lblFelicidad").innerHTML = felicidad + "%";
+    document.getElementById("lblHigiene").innerHTML = higiene + "%";
+
+    document.getElementById("barHambre").style.width = (100 - hambre) + "%";
+    document.getElementById("barSueno").style.width = (100 - sueno) + "%";
+    document.getElementById("barSalud").style.width = salud + "%";
+    document.getElementById("barFelicidad").style.width = felicidad + "%";
+    document.getElementById("barHigiene").style.width = higiene + "%";
+
+    actualizarMascota();
+}
+
+// PASO DEL TIEMPO
+setInterval(() => {
+
+    hambre += 3;
+    sueno += 2;
+    felicidad -= 2;
+    higiene -= 2;
+
+    if(hambre > 80 || higiene < 20){
+        salud -= 3;
+    }
+
+    normalizar();
+    actualizarLabels();
+
+}, 3000);
+
+window.onload = actualizarLabels;
+
+</script>
+
+</head>
+
+<body>
+
+<h1>Mascota Virtual</h1>
+
+<h2 id="estado">😄 Feliz</h2>
+
+<div id="contenedor">
+
+    <div id="zonaMascota"
+         ondrop="dropHandler(event)"
+         ondragover="dragoverHandler(event)">
+
+         <img id="mascota"
+         src="Brochacho feliz.png"
+         alt="Mascota">
+
+    </div>
+
+    <div id="panel">
+
+        <strong>Hambre</strong>
+        <div class="barra">
+            <div id="barHambre" class="relleno"></div>
+        </div>
+        <span id="lblPorcentajeHambre">50%</span>
+
+        <br><br>
+
+        <strong>Sueño</strong>
+        <div class="barra">
+            <div id="barSueno" class="relleno"></div>
+        </div>
+        <span id="lblPorcentajeSueno">50%</span>
+
+        <br><br>
+
+        <strong>Salud</strong>
+        <div class="barra">
+            <div id="barSalud" class="relleno"></div>
+        </div>
+        <span id="lblPorcentajeSalud">80%</span>
+
+        <br><br>
+
+        <strong>Felicidad</strong>
+        <div class="barra">
+            <div id="barFelicidad" class="relleno"></div>
+        </div>
+        <span id="lblFelicidad">70%</span>
+
+        <br><br>
+
+        <strong>Higiene</strong>
+        <div class="barra">
+            <div id="barHigiene" class="relleno"></div>
+        </div>
+        <span id="lblHigiene">60%</span>
+
+    </div>
+
+</div>
+
+<div id="objetos">
+
+    <!-- COMIDA -->
+    <img id="comida"
+        class="objeto"
+        src="Comida.png"
+        draggable="true"
+        ondragstart="dragstartHandler(event)"
+        title="Comida">
+
+    <!-- CAMA -->
+    <img id="cama"
+        class="objeto"
+        src="Cama.png"
+        draggable="true"
+        ondragstart="dragstartHandler(event)"
+        title="Cama">
+
+    <!-- JUEGO -->
+    <img id="juego"
+        class="objeto"
+        src="Juego.png"
+        draggable="true"
+        ondragstart="dragstartHandler(event)"
+        title="Jugar">
+
+    <!-- DUCHA -->
+    <img id="ducha"
+        class="objeto"
+        src="Jabon.png"
+        draggable="true"
+        ondragstart="dragstartHandler(event)"
+        title="Bañar">
+
+</div>
+
+</body>
+</html>
